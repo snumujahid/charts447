@@ -9,13 +9,52 @@ new Chart(document.getElementById("marketChart"), {
     type: "line",
     data: chartData,
     options: {
-        responsive: true,
-        tension: 0.3,
-        interaction: { mode: "index", intersect: false },
+        interaction: {
+            mode: 'nearest',
+            intersect: false
+        },
         plugins: {
-            legend: { position: "right" },
-            title: { display: true, text: "Market447" }
+            tooltip: {
+                enabled: true,
+                filter: (ctx) => ctx.datasetIndex === ctx.tooltip.dataPoints[0].datasetIndex
+            },
+            legend: {
+                onHover: (e, legendItem, legend) => {
+                    const index = legendItem.datasetIndex;
+                    const chart = legend.chart;
+    
+                    chart.data.datasets.forEach((ds, i) => {
+                        ds.borderWidth = i === index ? 3 : 1;
+                        ds.borderColor = i === index ? ds.borderColor : "rgba(200,200,200,0.3)";
+                    });
+                    chart.update();
+                },
+                onLeave: (e, legend, legendItem) => {
+                    const chart = legend.chart;
+                    chart.data.datasets.forEach((ds) => {
+                        ds.borderWidth = 2;
+                        ds.borderColor = ds.originalColor;  
+                    });
+                    chart.update();
+                }
+            }
+        },
+        hover: {
+            mode: 'dataset',
+            onHover: (evt, item, chart) => {
+                if (!item.length) return;
+                const hovered = item[0].datasetIndex;
+    
+                chart.data.datasets.forEach((ds, i) => {
+                    ds.borderWidth = i === hovered ? 3 : 1;
+                    ds.borderColor = i === hovered ? ds.borderColor : "rgba(200,200,200,0.25)";
+                    ds.backgroundColor = ds.borderColor;
+                });
+    
+                chart.update('none');
+            }
         }
     }
+
 });
 </script>
