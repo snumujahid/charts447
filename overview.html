@@ -1,32 +1,54 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
-<canvas id="sectorPie"></canvas>
+<canvas id="sectorPie" style="max-width: 360px;"></canvas>
 
 <script>
-const data = {"labels": ["Energy", "Banking", "Food & Beverages", "Technology"], "datasets": [{"data": [5, 2, 2, 1], "backgroundColor": ["rgba(207, 225, 242, 1)", "rgba(147, 196, 222, 1)", "rgba(74, 151, 201, 1)", "rgba(23, 100, 171, 1)"], "hoverOffset": 4}]};
+
+
+const data = {
+    labels: ["Energy", "Banking", "Food & Beverages", "Technology"],    // replace with vc.index
+    datasets: [{
+        data: [5, 2, 2, 1],                          // replace with vc.values
+        backgroundColor: [
+            "rgba(198,219,239,1)", 
+            "rgba(158,202,225,1)",
+            "rgba(107,174,214,1)"
+        ],
+        hoverOffset: 4
+    }]
+};
 
 new Chart(document.getElementById('sectorPie'), {
     type: 'doughnut',
     data: data,
+    plugins: [ChartDataLabels],
     options: {
         responsive: true,
-        cutout: '50%',          // donut hole width (Chart.js equivalent of width:0.4)
+        maintainAspectRatio: false,
         plugins: {
             legend: {
-                position: 'right'
+                display: true,
+                position: 'bottom',
+                labels: {
+                    boxWidth: 12,
+                    font: { size: 11 }
+                }
             },
-            tooltip: {
-                callbacks: {
-                    label: function(ctx) {
-                        const label = ctx.label || "";
-                        const value = ctx.parsed || 0;
-                        const total = ctx.chart._metasets[0].total;
-                        const pct = ((value / total) * 100).toFixed(1);
-                        return `${label}: ${value} (${pct}%)`;
-                    }
+            datalabels: {
+                color: '#000',
+                font: {
+                    weight: 'bold',
+                    size: 12
+                },
+                formatter: (value, ctx) => {
+                    const total = ctx.chart._metasets[0].total;
+                    const pct = (value / total * 100).toFixed(1);
+                    return pct + "%";
                 }
             }
-        }
+        },
+        cutout: '55%'   // controls donut hole
     }
 });
 </script>
