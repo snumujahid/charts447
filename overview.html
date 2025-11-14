@@ -1,8 +1,9 @@
+//const url = "https://raw.githubusercontent.com/snumujahid/charts447/refs/heads/main/Companies-447.csv";
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Sectors Donut Chart from Raw CSV</title>
+  <title>Sectors Donut Chart</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
@@ -17,40 +18,38 @@
   <script>
     async function loadCSVData() {
       const url = "https://raw.githubusercontent.com/snumujahid/charts447/refs/heads/main/Companies-447.csv";
-
+      
       const response = await fetch(url);
       const csvText = await response.text();
 
-      // Parse CSV
       const parsed = Papa.parse(csvText, { header: true });
       const data = parsed.data;
 
-      // Count occurrences of each sector
+      // Count occurrences, excluding "Others" and empty
       const sectorCounts = {};
       data.forEach(row => {
-        const sector = row.Sector?.trim() || "Unknown";
-      
-        // Skip "Others"
-        if (sector === "Others") return;
-      
+        const sector = row.Sector?.trim();
+        if (!sector || sector === "Others") return;
+
         if (sectorCounts[sector]) sectorCounts[sector]++;
         else sectorCounts[sector] = 1;
       });
 
-      // Labels and values for Chart.js
       const labels = Object.keys(sectorCounts);
       const values = Object.values(sectorCounts);
 
-      // Create Chart.js donut chart
+      // Generate shades of blue dynamically
+      const blueShades = labels.map((_, i) => `hsl(210, 80%, ${30 + i * 10}%)`);
+
+      // Create Chart.js donut chart with hover bulge
       new Chart(document.getElementById("sectorChart"), {
-        type: "doughnut",
+        type: 'doughnut',
         data: {
           labels: labels,
           datasets: [{
             data: values,
-            backgroundColor: [
-              "#FF6384","#36A2EB","#FFCE56","#8AFF33","#FF8A33","#33FFF6","#9B33FF"
-            ]
+            backgroundColor: blueShades,
+            hoverOffset: 20, // bulge effect on hover
           }]
         },
         options: {
