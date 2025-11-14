@@ -1,26 +1,76 @@
-<script>
-async function loadData() {
-  const response = await fetch(
-    "https://baserow.io/public/grid/qU_q2FGNdSKj-AriwGLadwEdQgeUWxJP4Piwq24R4vw"
-  );
-  const data = await response.json();
-
-  // Assuming your view has fields "Name" and "Value"
-  const labels = data.rows.map(row => row.Sector);
-  const values = data.rows.map(row => row.Sector);
-
-  new Chart(document.getElementById("myChart"), {
-    type: "pie",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "Data",
-        data: values,
-        backgroundColor: "rgba(54, 162, 235, 0.6)"
-      }]
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Baserow Donut Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: #f9f9f9;
     }
-  });
-}
+    canvas {
+      max-width: 500px;
+      max-height: 500px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Sector Distribution</h2>
+  <canvas id="sectorChart"></canvas>
 
-loadData();
-</script>
+  <script>
+    async function loadBaserowData() {
+      const response = await fetch("https://api.baserow.io/api/database/rows/table/1147842/?user_field_names=true");
+      const data = await response.json();
+
+      // Count occurrences of each sector
+      const sectorCounts = {};
+      data.results.forEach(row => {
+        const sector = row.Sector || "Unknown";
+        if (sectorCounts[sector]) {
+          sectorCounts[sector]++;
+        } else {
+          sectorCounts[sector] = 1;
+        }
+      });
+
+      const labels = Object.keys(sectorCounts);
+      const values = Object.values(sectorCounts);
+
+      // Create the donut chart
+      new Chart(document.getElementById("sectorChart"), {
+        type: "doughnut",
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: [
+              "#FF6384", "#36A2EB", "#FFCE56", "#8AFF33", "#FF8A33", "#33FFF6", "#9B33FF"
+            ],
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'right',
+            },
+            title: {
+              display: true,
+              text: 'Distribution of Sectors'
+            }
+          }
+        }
+      });
+    }
+
+    loadBaserowData();
+  </script>
+</body>
+</html>
