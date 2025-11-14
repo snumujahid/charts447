@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Sectors Donut Chart</title>
+  <meta charset="UTF-8">
+  <title>Sectors Donut Chart from CSV</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
@@ -12,35 +13,31 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background: #f9f9f9;
     }
-    canvas {
-      max-width: 500px;
-      max-height: 500px;
-    }
+    canvas { max-width: 500px; max-height: 500px; }
   </style>
 </head>
 <body>
-  <h2>Sector Distribution</h2>
+  <h2>Sector Distribution (CSV)</h2>
   <canvas id="sectorChart"></canvas>
 
   <script>
-    async function loadBaserowData() {
-      const response = await fetch("https://baserow.io/public/grid/qU_q2FGNdSKj-AriwGLadwEdQgeUWxJP4Piwq24R4vw/?format=json");
-      const data = await response.json();
+    async function loadCSVData() {
+      const url = "https://raw.githubusercontent.com/your-username/your-repo/main/sector-data.csv";
+      
+      // Fetch CSV
+      const response = await fetch(url);
+      const csvText = await response.text();
+      
+      // Parse CSV using PapaParse
+      const parsed = Papa.parse(csvText, { header: true });
+      const data = parsed.data;
 
-      // Count occurrences of each sector
-      const sectorCounts = {};
-      data.rows.forEach(row => {
-        const sector = row.Sector || "Unknown";
-        if (sectorCounts[sector]) sectorCounts[sector]++;
-        else sectorCounts[sector] = 1;
-      });
+      // Extract labels and values
+      const labels = data.map(row => row.Sector);
+      const values = data.map(row => Number(row.Count));
 
-      const labels = Object.keys(sectorCounts);
-      const values = Object.values(sectorCounts);
-
-      // Create the donut chart
+      // Create Chart.js donut chart
       new Chart(document.getElementById("sectorChart"), {
         type: "doughnut",
         data: {
@@ -49,25 +46,20 @@
             data: values,
             backgroundColor: [
               "#FF6384", "#36A2EB", "#FFCE56", "#8AFF33", "#FF8A33", "#33FFF6", "#9B33FF"
-            ],
+            ]
           }]
         },
         options: {
           responsive: true,
           plugins: {
-            legend: {
-              position: 'right',
-            },
-            title: {
-              display: true,
-              text: 'Distribution of Sectors'
-            }
+            legend: { position: 'right' },
+            title: { display: true, text: 'Distribution of Sectors' }
           }
         }
       });
     }
 
-    loadBaserowData();
+    loadCSVData();
   </script>
 </body>
 </html>
