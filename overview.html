@@ -29,6 +29,10 @@
       const sectorCounts = {};
       data.forEach(row => {
         const sector = row.Sector?.trim() || "Unknown";
+      
+        // Skip "Others"
+        if (sector === "Others") return;
+      
         if (sectorCounts[sector]) sectorCounts[sector]++;
         else sectorCounts[sector] = 1;
       });
