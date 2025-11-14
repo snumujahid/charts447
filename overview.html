@@ -2,40 +2,40 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Sectors Donut Chart from CSV</title>
+  <title>Sectors Donut Chart from Raw CSV</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    canvas { max-width: 500px; max-height: 500px; }
+    body { font-family: sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; }
+    canvas { max-width:500px; max-height:500px; }
   </style>
 </head>
 <body>
-  <h2>Sector Distribution (CSV)</h2>
+  <h2>Sector Distribution</h2>
   <canvas id="sectorChart"></canvas>
 
   <script>
     async function loadCSVData() {
       const url = "https://raw.githubusercontent.com/snumujahid/charts447/refs/heads/main/Companies-447.csv";
-      
-      // Fetch CSV
+
       const response = await fetch(url);
       const csvText = await response.text();
-      
-      // Parse CSV using PapaParse
+
+      // Parse CSV
       const parsed = Papa.parse(csvText, { header: true });
       const data = parsed.data;
 
-      // Extract labels and values
-      const labels = data.map(row => row.Sector);
-      const values = data.map(row => Number(row.Count));
+      // Count occurrences of each sector
+      const sectorCounts = {};
+      data.forEach(row => {
+        const sector = row.Sector?.trim() || "Unknown";
+        if (sectorCounts[sector]) sectorCounts[sector]++;
+        else sectorCounts[sector] = 1;
+      });
+
+      // Labels and values for Chart.js
+      const labels = Object.keys(sectorCounts);
+      const values = Object.values(sectorCounts);
 
       // Create Chart.js donut chart
       new Chart(document.getElementById("sectorChart"), {
@@ -45,7 +45,7 @@
           datasets: [{
             data: values,
             backgroundColor: [
-              "#FF6384", "#36A2EB", "#FFCE56", "#8AFF33", "#FF8A33", "#33FFF6", "#9B33FF"
+              "#FF6384","#36A2EB","#FFCE56","#8AFF33","#FF8A33","#33FFF6","#9B33FF"
             ]
           }]
         },
@@ -53,7 +53,7 @@
           responsive: true,
           plugins: {
             legend: { position: 'right' },
-            title: { display: true, text: 'Distribution of Sectors' }
+            title: { display: true, text: 'Sector Distribution' }
           }
         }
       });
