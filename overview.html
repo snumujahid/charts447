@@ -1,66 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Sectors Donut Chart</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <style>
-    body { font-family: sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; }
-    canvas { max-width:500px; max-height:500px; }
-  </style>
-</head>
-<body>
-  <canvas id="sectorChart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <script>
-    async function loadCSVData() {
-      const url = "https://raw.githubusercontent.com/snumujahid/charts447/refs/heads/main/Companies-447.csv";
-      
-      const response = await fetch(url);
-      const csvText = await response.text();
+<canvas id="sectorPie"></canvas>
 
-      const parsed = Papa.parse(csvText, { header: true });
-      const data = parsed.data;
+<script>
+const data = {"labels": ["Energy", "Banking", "Food & Beverages", "Technology"], "datasets": [{"data": [5, 2, 2, 1], "backgroundColor": ["rgba(207, 225, 242, 1)", "rgba(147, 196, 222, 1)", "rgba(74, 151, 201, 1)", "rgba(23, 100, 171, 1)"], "hoverOffset": 4}]};
 
-      // Count occurrences, excluding "Others" and empty
-      const sectorCounts = {};
-      data.forEach(row => {
-        const sector = row.Sector?.trim();
-        if (!sector || sector === "Others") return;
-
-        if (sectorCounts[sector]) sectorCounts[sector]++;
-        else sectorCounts[sector] = 1;
-      });
-
-      const labels = Object.keys(sectorCounts);
-      const values = Object.values(sectorCounts);
-
-      // Generate shades of blue dynamically
-      const blueShades = labels.map((_, i) => `hsl(210, 80%, ${30 + i * 10}%)`);
-
-      // Create Chart.js donut chart with hover bulge
-      new Chart(document.getElementById("sectorChart"), {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: values,
-            backgroundColor: blueShades,
-            hoverOffset: 20, // bulge effect on hover
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'right' },
-            // title: { display: true, text: 'Sector Distribution' }
-          }
+new Chart(document.getElementById('sectorPie'), {
+    type: 'doughnut',
+    data: data,
+    options: {
+        responsive: true,
+        cutout: '50%',          // donut hole width (Chart.js equivalent of width:0.4)
+        plugins: {
+            legend: {
+                position: 'right'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(ctx) {
+                        const label = ctx.label || "";
+                        const value = ctx.parsed || 0;
+                        const total = ctx.chart._metasets[0].total;
+                        const pct = ((value / total) * 100).toFixed(1);
+                        return `${label}: ${value} (${pct}%)`;
+                    }
+                }
+            }
         }
-      });
     }
-
-    loadCSVData();
-  </script>
-</body>
-</html>
+});
+</script>
